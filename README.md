@@ -2,12 +2,29 @@
 
 A Chrome/Edge browser extension that tracks who is currently using your shared LinkedIn Recruiter (RPS) account in real-time, with team management, daily usage timelines, and multi-team support.
 
-![Alt text](assets/linkedinrps_singin.png)
-![Alt text](assets/linkedinrps.png)
-![Alt text](assets/linkedinrps1.png)
-![Alt text](assets/linkedinrps_admin1.png)
-![Alt text](assets/linkedinrps_admin2.png)
-![Alt text](assets/linkedinrps_admin3.png)
+## 📸 Screenshots
+
+### Extension Popup
+
+#### Sign In Screen
+![Extension Sign In](assets/linkedinrps_singin.png)
+
+#### Main Dashboard
+![Extension Main View](assets/linkedinrps.png)
+
+#### Timeline View
+![Extension Timeline](assets/linkedinrps1.png)
+
+### Admin Panel
+
+#### Admin Dashboard
+![Admin Dashboard](assets/linkedinrps_admin1.png)
+
+#### Sessions Management
+![Admin Sessions](assets/linkedinrps_admin2.png)
+
+#### User Management
+![Admin Users](assets/linkedinrps_admin3.png)
 
 ## ✨ Features
 
