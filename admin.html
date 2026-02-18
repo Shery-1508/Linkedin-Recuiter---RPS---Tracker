@@ -1,0 +1,507 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>LinkedIn RPS Tracker Admin</title>
+    <style>
+      /* Windows 98 / Classic theme */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root {
+        --win-title: #000080;
+        --win-title-bottom: #1084d0;
+        --win-bg: #c0c0c0;
+        --win-face: #c0c0c0;
+        --win-highlight: #ffffff;
+        --win-shadow: #808080;
+        --win-dark: #404040;
+        --win-text: #000000;
+        --win-success: #008000;
+        --win-danger: #800000;
+        --font-win: Tahoma, "MS Sans Serif", "Segoe UI", sans-serif;
+      }
+      body {
+        font-family: var(--font-win);
+        background: var(--win-bg);
+        color: var(--win-text);
+        padding: 16px;
+        min-height: 100vh;
+        font-size: 12px;
+      }
+      .container { max-width: 1200px; margin: 0 auto; }
+      .header {
+        background: linear-gradient(180deg, var(--win-title) 0%, var(--win-title-bottom) 100%);
+        color: #fff;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+      }
+      .header h1 { font-size: 1.4rem; font-weight: bold; margin-bottom: 6px; }
+      .header p { font-size: 12px; opacity: 0.95; }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+      .card {
+        background: var(--win-face);
+        padding: 16px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+      }
+      .card h2 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 12px;
+        color: var(--win-text);
+      }
+      .card h2::before {
+        content: "";
+        width: 4px;
+        height: 16px;
+        background: var(--win-title);
+        margin-right: 8px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .card p {
+        color: var(--win-text);
+        font-size: 12px;
+        margin-bottom: 14px;
+        line-height: 1.4;
+      }
+      .form-group { margin-bottom: 14px; }
+      label {
+        display: block;
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: var(--win-text);
+      }
+      input, textarea, select {
+        width: 100%;
+        padding: 6px 8px;
+        border: 2px solid;
+        border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+        background: #fff;
+        color: var(--win-text);
+        font-family: var(--font-win);
+        font-size: 12px;
+      }
+      textarea { min-height: 72px; resize: vertical; }
+      .btn {
+        padding: 6px 14px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+        background: var(--win-face);
+        color: var(--win-text);
+        font-size: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: var(--font-win);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn:active {
+        border-color: var(--win-dark) var(--win-highlight) var(--win-highlight) var(--win-dark);
+      }
+      .btn:hover { background: #d4d0c8; }
+      .btn-primary { background: var(--win-face); }
+      .btn-secondary { background: var(--win-face); }
+      .btn-danger { background: var(--win-face); color: var(--win-danger); }
+      .btn-danger:hover { background: #ffb6c1; }
+      .btn-group { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+      .info-box {
+        background: #fff;
+        border: 2px solid;
+        border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+        padding: 12px;
+        margin-bottom: 14px;
+      }
+      .info-box strong { color: var(--win-title); }
+      .accounts-list { margin-top: 16px; }
+      .account-item {
+        background: var(--win-face);
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+        padding: 12px;
+        margin-bottom: 10px;
+      }
+      .account-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .account-title { font-size: 1rem; font-weight: bold; }
+      .account-actions { display: flex; gap: 6px; }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        border: 1px solid var(--win-shadow);
+        background: #90ee90;
+      }
+      .badge-active { background: #90ee90; }
+      .account-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 12px;
+      }
+      .detail-label { font-weight: bold; margin-bottom: 2px; }
+      .detail-value { font-family: "Courier New", monospace; }
+      .status-message {
+        padding: 10px 12px;
+        margin-bottom: 14px;
+        font-size: 12px;
+        display: none;
+        border: 2px solid;
+      }
+      .status-message.success {
+        background: #e8f5e9;
+        border-color: var(--win-success);
+        color: var(--win-success);
+        display: block;
+      }
+      .status-message.error {
+        background: #ffebee;
+        border-color: var(--win-danger);
+        color: var(--win-danger);
+        display: block;
+      }
+      .empty-state { text-align: center; padding: 24px 16px; color: var(--win-text); }
+      .empty-state-icon { font-size: 2rem; margin-bottom: 8px; }
+      .admin-whos-using {
+        background: var(--win-face);
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+        border-left: 4px solid var(--win-title);
+      }
+      .admin-whos-using.empty { border-left-color: var(--win-shadow); }
+      .admin-whos-using .label { font-size: 11px; margin-bottom: 4px; }
+      .admin-whos-using .name { font-size: 1rem; font-weight: bold; color: var(--win-title); }
+      .admin-whos-using .meta { font-size: 11px; margin-top: 4px; }
+      .admin-daily-calendar {
+        background: var(--win-face);
+        padding: 12px;
+        border: 2px solid;
+        border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+      }
+      .admin-timeline-day-label {
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        text-align: center;
+      }
+      .admin-timeline-axis {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 11px;
+      }
+      .admin-timeline-track-wrap {
+        position: relative;
+        height: 24px;
+        background: var(--win-shadow);
+        margin-bottom: 6px;
+        overflow: hidden;
+        border: 1px solid var(--win-dark);
+      }
+      .admin-timeline-track { position: relative; height: 100%; width: 100%; }
+      .admin-timeline-block {
+        position: absolute;
+        top: 1px;
+        bottom: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        color: #fff;
+        border: 1px solid var(--win-dark);
+        min-width: 2px;
+      }
+      .admin-timeline-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .admin-timeline-name {
+        flex-shrink: 0;
+        width: 56px;
+        font-size: 11px;
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .admin-timeline-empty {
+        text-align: center;
+        padding: 16px;
+        font-size: 12px;
+      }
+      .admin-timeline-zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 6px;
+      }
+      .admin-timeline-zoom-btn {
+        width: 26px;
+        height: 26px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+        background: var(--win-face);
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+      }
+      .admin-timeline-zoom-btn:active {
+        border-color: var(--win-dark) var(--win-highlight) var(--win-highlight) var(--win-dark);
+      }
+      .admin-timeline-zoom-label { font-size: 12px; }
+      .admin-timeline-rows-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 8px 4px 8px 0;
+      }
+      .admin-timeline-rows-scroll::-webkit-scrollbar { height: 16px; }
+      .admin-timeline-rows-scroll::-webkit-scrollbar-track { background: var(--win-face); border: 1px solid var(--win-shadow); }
+      .admin-timeline-scroll-inner { position: relative; padding-right: 8px; }
+      .admin-timeline-axis-detail {
+        position: relative;
+        height: 26px;
+        margin-bottom: 8px;
+        font-size: 11px;
+      }
+      .admin-timeline-axis-tick { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+      .admin-timeline-axis-tick.sun { color: #808000; }
+      .admin-timeline-axis-tick.moon { color: #000080; }
+      .sessions-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        background: #fff;
+        border: 2px solid;
+        border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+      }
+      .sessions-table th, .sessions-table td {
+        padding: 6px 10px;
+        text-align: left;
+        border: 1px solid var(--win-shadow);
+      }
+      .sessions-table th {
+        background: var(--win-face);
+        font-weight: bold;
+        border: 1px solid var(--win-shadow);
+      }
+      .sessions-table .btn-delete-session {
+        padding: 2px 8px;
+        font-size: 11px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+        background: var(--win-face);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>⚙️ Admin Settings</h1>
+        <p>Manage RPS accounts and extension configuration</p>
+        <p id="adminTeamName" style="font-size: 11px; margin-top: 4px;"></p>
+      </div>
+
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="card" style="margin-bottom: 24px;">
+        <h2>👥 Who’s using now & daily usage</h2>
+        <p>
+          Live view of who is logged into the extension and a daily calendar of usage (12am – 12am) by user.
+        </p>
+        <div class="form-group" style="max-width: 200px;">
+          <label for="adminCalendarDate">View date</label>
+          <input type="date" id="adminCalendarDate" />
+        </div>
+        <div id="adminWhosUsing" class="admin-whos-using"></div>
+        <div id="adminDailyCalendar" class="admin-daily-calendar"></div>
+        <button id="refreshUsageBtn" class="btn btn-secondary" style="margin-top: 12px;">🔄 Refresh usage</button>
+      </div>
+
+      <div class="card" style="margin-bottom: 24px;">
+        <h2>📋 Sessions (RPS) – add / edit / delete</h2>
+        <p>Manage session data for corrections or refresh. Only RPS sessions are shown in the timeline.</p>
+        <div class="form-group" style="max-width: 200px;">
+          <label for="sessionsDateFilter">Filter by date</label>
+          <input type="date" id="sessionsDateFilter" />
+        </div>
+        <div class="btn-group" style="margin-bottom: 12px;">
+          <button id="loadSessionsBtn" class="btn btn-primary">Load sessions</button>
+          <button id="deleteSessionsForDateBtn" class="btn btn-danger">Delete sessions for selected date</button>
+          <button id="deleteAllSessionsBtn" class="btn btn-danger">Delete all sessions</button>
+        </div>
+        <div id="sessionsTableWrap" style="overflow-x: auto; max-height: 280px; overflow-y: auto;">
+          <table id="sessionsTable" class="sessions-table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <thead><tr><th>User</th><th>Login</th><th>Logout</th><th></th></tr></thead>
+            <tbody id="sessionsTableBody"></tbody>
+          </table>
+          <div id="sessionsTableEmpty" style="padding: 16px; color: var(--text-muted); display: none;">No sessions loaded. Click Load sessions.</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Extension & Browser Identity</h2>
+          <p>
+            <strong>Purpose:</strong> Set a unique identifier for THIS browser/computer. This
+            <code>clientId</code> is sent to Firebase with every login/logout event so you can see
+            which machine/browser is tracking the RPS account. This is stored locally in your
+            browser (not in Firebase).
+          </p>
+
+          <div class="form-group">
+            <label for="clientIdInput">Browser / User ID (your short name)</label>
+            <input
+              id="clientIdInput"
+              type="text"
+              placeholder="e.g. abc, shahriyar-office-pc, team-member-1"
+            />
+            <small style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-top: 4px;">
+              This value is sent to Firebase as <code>clientId</code> so everyone can see who is
+              currently using the RPS account.
+            </small>
+          </div>
+
+          <div class="info-box">
+            <strong>Firebase Configuration:</strong><br />
+            The Firebase Realtime Database URL is hardcoded inside the extension code.<br />
+            To point this extension at a different Firebase project, update
+            <code>FIREBASE_CONFIG.databaseURL</code> in <code>background.js</code> and
+            <code>popup.js</code>.
+          </div>
+
+          <div class="btn-group">
+            <button id="saveSettingsBtn" class="btn btn-primary">💾 Save Settings</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>LinkedIn RPS Account Configuration (Local)</h2>
+          <p>
+            Add and manage <strong>extension accounts</strong> for your team. Each row represents a
+            named user for this shared LinkedIn RPS login (these names appear in the popup and in
+            Firebase so you can see “who is using it now”).
+          </p>
+
+          <div class="form-group">
+            <label for="accDisplayName">Display Name</label>
+            <input id="accDisplayName" type="text" placeholder="e.g. Main RPS Account" />
+          </div>
+
+          <div class="form-group">
+            <label for="accId">Shared Account ID (Tracking Key)</label>
+            <input id="accId" type="text" placeholder="e.g. linkedin-rps-main" />
+            <small style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-top: 4px;">
+              Used as the key in Firebase database
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="accUsername">LinkedIn Email / Username</label>
+            <input
+              id="accUsername"
+              type="email"
+              placeholder="e.g. rps-account@example.com"
+            />
+            <small style="color: var(--text-muted); font-size: 0.85rem; display: block; margin-top: 4px;">
+              Must match the RPS/Premium account email. Only this account is tracked; personal LinkedIn logins show as "Personal account" and do not update who's using now.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="accPassword">LinkedIn Password</label>
+            <input id="accPassword" type="text" placeholder="(Optional - for reference)" autocomplete="off" />
+          </div>
+
+          <div class="form-group">
+            <label for="accNotes">Notes</label>
+            <textarea id="accNotes" placeholder="Any additional information or instructions"></textarea>
+          </div>
+
+          <div class="btn-group">
+            <button id="addAccountBtn" class="btn btn-primary">➕ Add / Update Account</button>
+            <button id="resetFormBtn" class="btn btn-secondary">🗑️ Clear Form</button>
+          </div>
+
+          <div class="accounts-list" id="accountsList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Extension Login Users (Firebase)</h2>
+          <p>
+            These users can sign in to the extension (in the popup). Credentials are stored in
+            Firebase Realtime Database under <code>/users</code>. Keep it simple for your internal
+            team.
+          </p>
+
+          <div class="info-box" id="firebaseInfoBox" style="margin-bottom: 20px;">
+            <strong>Current Firebase URL:</strong><br />
+            <code id="firebaseUrlDisplay" style="font-size: 0.85rem; word-break: break-all;"></code><br />
+            <small style="display: block; margin-top: 8px;">
+              To change this, edit <code>FIREBASE_CONFIG.databaseURL</code> in <code>admin.js</code>,
+              <code>background.js</code>, and <code>popup.js</code>
+            </small>
+            <button
+              id="testFirebaseBtn"
+              class="btn btn-secondary"
+              style="margin-top: 8px; font-size: 0.85rem; padding: 6px 12px;"
+            >
+              🔍 Test Firebase Connection
+            </button>
+            <div id="firebaseTestResult" style="margin-top: 8px; font-size: 0.85rem;"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="userUsername">Username</label>
+            <input id="userUsername" type="text" placeholder="e.g. shahriyar, member1" />
+          </div>
+
+          <div class="form-group">
+            <label for="userDisplayName">Display Name</label>
+            <input id="userDisplayName" type="text" placeholder="e.g. Shahriyar Noor" />
+          </div>
+
+          <div class="form-group">
+            <label for="userPassword">Password</label>
+            <input id="userPassword" type="text" placeholder="Simple internal password" autocomplete="off" />
+          </div>
+
+          <div class="btn-group">
+            <button id="saveUserBtn" class="btn btn-primary">💾 Save User</button>
+            <button id="resetUserFormBtn" class="btn btn-secondary">🧹 Clear</button>
+          </div>
+
+          <div class="btn-group" style="margin-top: 10px;">
+            <button id="resetTeamPresenceBtn" class="btn btn-secondary">♻ Reset this team’s presence</button>
+          </div>
+
+          <div class="accounts-list" id="usersList" style="margin-top: 16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

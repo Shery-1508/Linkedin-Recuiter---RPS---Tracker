@@ -1,0 +1,46 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "admins": {
+      ".read": true,
+      ".write": true,
+      "$uid": { ".validate": "newData.isBoolean()" }
+    },
+    "users": {
+      ".read": true,
+      ".write": true,
+      "$uid": {
+        ".validate": "newData.hasChildren(['username', 'displayName']) && newData.child('username').isString() && newData.child('displayName').isString()"
+      }
+    },
+    "accounts": {
+      ".read": true,
+      ".write": true,
+      "$accountId": {
+        "currentUser": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.val() === null || (newData.hasChildren(['userId', 'displayName', 'loggedInAt']) && newData.child('userId').isString() && newData.child('displayName').isString() && newData.child('loggedInAt').isString())"
+        },
+        "sessions": {
+          ".read": true,
+          ".write": true,
+          "$sessionId": {
+            ".validate": "newData.hasChildren(['loginAt']) && newData.child('loginAt').isString()"
+          }
+        },
+        "state": { ".read": true, ".write": true },
+        "events": { ".read": true, ".write": true },
+        "config": { ".read": true, ".write": true }
+      }
+    },
+    "extensionOnline": {
+      ".read": true,
+      ".write": true,
+      "$uid": {
+        ".validate": "!newData.exists() || (newData.hasChildren(['displayName', 'lastSeenAt']) && newData.child('lastSeenAt').isString())"
+      }
+    }
+  }
+}

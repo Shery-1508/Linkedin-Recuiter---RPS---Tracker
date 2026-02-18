@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LinkedIn RPS Tracker</title>
+    <style>
+      /* Windows 98 / Classic theme */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root {
+        --win-title: #000080;
+        --win-title-bottom: #1084d0;
+        --win-bg: #c0c0c0;
+        --win-face: #c0c0c0;
+        --win-highlight: #ffffff;
+        --win-light: #dfdfdf;
+        --win-shadow: #808080;
+        --win-dark: #404040;
+        --win-text: #000000;
+        --win-success: #008000;
+        --win-danger: #800000;
+        --win-warning: #808000;
+        --font-win: Tahoma, "MS Sans Serif", "Segoe UI", sans-serif;
+      }
+      body {
+        font-family: var(--font-win);
+        background: var(--win-bg);
+        color: var(--win-text);
+        width: 400px;
+        max-height: 560px;
+        overflow-y: auto;
+        font-size: 12px;
+      }
+      /* Win98 3D raised (buttons) */
+      .btn, .collapse-btn, .timeline-zoom-btn {
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+        background: var(--win-face);
+        color: var(--win-text);
+      }
+      .btn:active, .collapse-btn:active, .timeline-zoom-btn:active {
+        border-color: var(--win-dark) var(--win-highlight) var(--win-highlight) var(--win-dark);
+      }
+      /* Win98 inset (inputs) */
+      input, textarea, select, .team-list, .list, .timeline-track-wrap {
+        border: 2px solid;
+        border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+        background: #ffffff;
+        color: var(--win-text);
+      }
+
+      #loginView {
+        display: none;
+        padding: 16px;
+        background: var(--win-bg);
+      }
+      #loginView h2 {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: var(--win-text);
+      }
+      #loginView .login-desc {
+        font-size: 11px;
+        color: var(--win-text);
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+      #loginView label {
+        display: block;
+        font-size: 11px;
+        font-weight: bold;
+        margin-bottom: 4px;
+        color: var(--win-text);
+      }
+      #loginView input[type="text"],
+      #loginView input[type="password"] {
+        width: 100%;
+        padding: 4px 6px;
+        margin-bottom: 10px;
+        font-family: var(--font-win);
+        font-size: 12px;
+      }
+      #loginView #loginError {
+        min-height: 18px;
+        font-size: 11px;
+        color: var(--win-danger);
+        margin-bottom: 8px;
+      }
+      #loginView .login-btns { display: flex; gap: 8px; margin-top: 12px; }
+      #loginView .btn { flex: 1; padding: 6px 12px; font-size: 12px; cursor: pointer; font-family: var(--font-win); }
+      .btn-primary { background: var(--win-face); }
+      .btn-primary:hover { background: #d4d0c8; }
+      .btn-warning { background: var(--win-face); }
+      .btn-ghost { background: var(--win-title); color: #fff; border-color: var(--win-title) #000 #000 var(--win-title); }
+      .btn-ghost:hover { background: var(--win-title-bottom); }
+      .btn-icon {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      #appView { display: none; }
+      .header {
+        background: linear-gradient(180deg, var(--win-title) 0%, var(--win-title-bottom) 100%);
+        color: #fff;
+        padding: 10px 12px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        border-bottom: 2px solid var(--win-dark);
+      }
+      .header-top { display: flex; justify-content: space-between; align-items: center; }
+      .header-title-group { display: flex; flex-direction: column; gap: 2px; }
+      .header h1 { font-size: 1rem; font-weight: bold; }
+      .team-name-label { font-size: 11px; }
+      .header-actions { display: flex; gap: 4px; }
+      #detectedAccount {
+        display: none;
+        margin-top: 8px;
+        padding: 6px 8px;
+        background: rgba(255,255,255,0.2);
+        font-size: 11px;
+      }
+      #detectedAccount.match { background: rgba(0,128,0,0.4); }
+      .detected-account-label { opacity: 0.9; }
+      .detected-account-value { font-weight: bold; }
+
+      .main { padding: 10px; background: var(--win-bg); }
+      .card {
+        background: var(--win-face);
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+      }
+      .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+      .dot {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+        border: 1px solid var(--win-shadow);
+      }
+      .dot.on { background: var(--win-success); }
+      .dot.off { background: var(--win-danger); }
+      .dot.unknown { background: var(--win-shadow); }
+      .status-indicator { width: 10px; height: 10px; flex-shrink: 0; border: 1px solid var(--win-shadow); }
+      .status-indicator.active { background: var(--win-success); }
+      .status-indicator.inactive { background: var(--win-danger); }
+      .status-indicator.unknown { background: var(--win-shadow); }
+      .status-badge, .card-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        font-size: 11px;
+        font-weight: bold;
+        border: 1px solid var(--win-shadow);
+        background: var(--win-face);
+      }
+      .status-badge.logged-in, .card-badge.logged-in { background: #90ee90; }
+      .status-badge.logged-out, .card-badge.logged-out { background: #ffb6c1; }
+      .status-badge.unknown, .card-badge.unknown { background: var(--win-face); }
+      .card-title { font-size: 11px; font-weight: bold; color: var(--win-text); }
+      .card-meta {
+        font-size: 11px;
+        color: var(--win-text);
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--win-shadow);
+      }
+      .card-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--win-shadow);
+      }
+      .meta-label { font-size: 11px; color: var(--win-text); }
+      .meta-value { font-size: 11px; font-weight: bold; }
+
+      .section { margin-bottom: 10px; }
+      .section-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: var(--win-text);
+        margin-bottom: 6px;
+      }
+      .team-desc { font-size: 11px; margin-bottom: 6px; }
+      .team-list {
+        padding: 4px;
+        max-height: 140px;
+        overflow-y: auto;
+        background: #fff;
+      }
+      .team-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px;
+        font-size: 11px;
+      }
+      .team-row .dot { width: 8px; height: 8px; }
+      .team-row.on .dot { background: var(--win-success); }
+      .team-row.off .dot { background: var(--win-shadow); }
+      .team-name { font-weight: bold; flex: 1; }
+      .team-status { font-size: 11px; }
+      .team-row.on .team-status { color: var(--win-success); }
+      .team-empty { text-align: center; padding: 10px; font-size: 11px; }
+      .team-avail-row { display: flex; align-items: center; gap: 8px; padding: 4px 6px; font-size: 11px; }
+      .team-avail-row .team-avail-dot { width: 8px; height: 8px; flex-shrink: 0; border: 1px solid var(--win-shadow); }
+      .team-avail-active .team-avail-dot { background: var(--win-success); }
+      .team-avail-offline .team-avail-dot { background: var(--win-shadow); }
+      .team-avail-name { font-weight: bold; flex: 1; }
+      .team-avail-status { font-size: 11px; }
+      .team-avail-active .team-avail-status { color: var(--win-success); }
+      .team-avail-empty { text-align: center; padding: 10px; font-size: 11px; }
+      .info-item { font-size: 11px; }
+
+      .timeline-wrap {
+        background: var(--win-face);
+        padding: 10px;
+        border: 2px solid;
+        border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight);
+      }
+      .timeline-day-label { font-size: 11px; font-weight: bold; margin-bottom: 4px; }
+      .timeline-zoom-controls { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+      .timeline-zoom-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+      }
+      .timeline-zoom-label { font-size: 11px; }
+      .timeline-rows-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        margin: 0 -2px;
+        padding: 6px 2px 6px 0;
+      }
+      .timeline-rows-scroll::-webkit-scrollbar { height: 16px; }
+      .timeline-rows-scroll::-webkit-scrollbar-track { background: var(--win-face); border: 1px solid var(--win-shadow); }
+      .timeline-rows-scroll::-webkit-scrollbar-thumb { background: var(--win-face); border: 2px solid; border-color: var(--win-highlight) var(--win-dark) var(--win-dark) var(--win-highlight); }
+      .timeline-scroll-inner { position: relative; padding-right: 8px; }
+      .timeline-axis-detail {
+        position: relative;
+        height: 22px;
+        margin-bottom: 8px;
+        font-size: 11px;
+      }
+      .timeline-axis-tick { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+      .timeline-axis-tick.sun { color: var(--win-warning); }
+      .timeline-axis-tick.moon { color: #000080; }
+      .timeline-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+      .timeline-row:last-child { margin-bottom: 0; }
+      .timeline-name {
+        flex-shrink: 0;
+        width: 52px;
+        font-size: 11px;
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .timeline-track-wrap {
+        height: 22px;
+        background: var(--win-shadow);
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .timeline-track { position: relative; height: 100%; }
+      .timeline-block {
+        position: absolute;
+        top: 1px;
+        bottom: 1px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: bold;
+        color: #fff;
+        border: 1px solid var(--win-dark);
+        min-width: 2px;
+      }
+      .timeline-empty { text-align: center; padding: 12px; font-size: 11px; }
+
+      .collapse-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: var(--font-win);
+      }
+      .collapse-btn:hover { background: #d4d0c8; }
+      .collapse-btn .chevron { font-size: 10px; }
+      .collapse-btn[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+      .collapse-body { max-height: 180px; overflow: hidden; transition: max-height 0.2s ease-out; }
+      .collapse-body.collapsed { max-height: 0; overflow: hidden; margin: 0; padding: 0; }
+      .list {
+        background: #fff;
+        padding: 4px;
+        margin-top: 4px;
+        max-height: 160px;
+        overflow-y: auto;
+      }
+      .list-item {
+        padding: 6px 8px;
+        background: var(--win-face);
+        margin-bottom: 2px;
+        font-size: 11px;
+        border: 1px solid var(--win-shadow);
+        border-left: 3px solid var(--win-shadow);
+      }
+      .list-item:last-child { margin-bottom: 0; }
+      .list-item.logged-in { border-left-color: var(--win-success); }
+      .list-item.logged-out { border-left-color: var(--win-danger); }
+      .list-item-header { display: flex; justify-content: space-between; margin-bottom: 2px; }
+      .list-item-time { font-size: 10px; }
+      .empty-state { text-align: center; padding: 10px; font-size: 11px; }
+    </style>
+  </head>
+  <body>
+    <div id="loginView" style="padding: 20px;">
+      <h2>Sign in to Extension</h2>
+      <div class="login-desc">
+        Log in with your extension account. This is separate from LinkedIn and is used only to track who is using the shared RPS account.
+      </div>
+      <label>Username</label>
+      <input id="loginUsername" type="text" placeholder="e.g. shahriyar, member1" />
+      <label>Password</label>
+      <input id="loginPassword" type="password" placeholder="Password" />
+      <div id="loginError"></div>
+      <div class="login-btns">
+        <button id="loginBtn" class="btn btn-primary">Log in</button>
+      </div>
+    </div>
+
+    <div id="appView">
+      <div class="header">
+        <div class="header-top">
+          <div class="header-title-group">
+            <h1>LinkedIn RPS Tracker</h1>
+            <div id="teamNameLabel" class="team-name-label"></div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-ghost btn-icon" id="adminBtn" title="Admin Settings" style="display: none;">&#9881;</button>
+            <button class="btn btn-ghost btn-icon" id="refreshBtn" title="Refresh">&#8635;</button>
+            <button class="btn btn-ghost btn-icon" id="logoutBtn" title="Logout">&#8598;</button>
+          </div>
+        </div>
+        <div id="detectedAccount" class="detected-account">
+          <span class="detected-account-label">LinkedIn: </span>
+          <span class="detected-account-value" id="detectedAccountValue">–</span>
+        </div>
+      </div>
+
+      <div class="main">
+        <div class="card" id="userCard">
+          <div class="card-header">
+            <div class="dot unknown" id="userIndicator"></div>
+            <div>
+              <div class="card-title">Extension user</div>
+              <span class="card-badge unknown" id="userBadge">–</span>
+            </div>
+          </div>
+          <div class="card-meta" id="userDetailsValue">–</div>
+        </div>
+
+        <div class="card" id="whosUsingCard">
+          <div class="card-header">
+            <div class="dot unknown" id="whosUsingIndicator"></div>
+            <div>
+              <div class="card-title">Who's on RPS now</div>
+              <span class="card-badge unknown" id="whosUsingBadge">–</span>
+            </div>
+          </div>
+          <div class="card-meta" id="whosUsingDetails">Loading…</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Team availability</div>
+          <div class="team-desc">Green = active in extension. Hover for last seen.</div>
+          <div id="teamAvailabilityList" class="team-list">Loading…</div>
+        </div>
+
+        <div class="card" id="statusCard">
+          <div class="card-header">
+            <div class="dot unknown" id="statusIndicator"></div>
+            <div>
+              <div class="card-title">Current status</div>
+              <span class="card-badge unknown" id="statusBadge">–</span>
+            </div>
+          </div>
+          <div class="card-grid">
+            <div class="info-item">
+              <div class="meta-label">Last change</div>
+              <div class="meta-value" id="lastChangeTime">–</div>
+            </div>
+            <div class="info-item">
+              <div class="meta-label">Source</div>
+              <div class="meta-value" id="lastChangeSource">–</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Today's timeline</div>
+          <div id="dailyCalendarContainer" class="timeline-wrap"></div>
+        </div>
+
+        <div class="section">
+          <button type="button" class="collapse-btn" id="toggleActivity" aria-expanded="false" aria-controls="activityBody">
+            <span>Recent Activity</span>
+            <span class="chevron">&#9660;</span>
+          </button>
+          <div id="activityBody" class="collapse-body collapsed">
+            <div class="list" id="historyList"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <button type="button" class="collapse-btn" id="toggleDebug" aria-expanded="false" aria-controls="debugBody">
+            <span>Debug Log</span>
+            <span class="chevron">&#9660;</span>
+          </button>
+          <div id="debugBody" class="collapse-body collapsed">
+            <div class="list" id="logList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
